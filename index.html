@@ -205,6 +205,7 @@ details.more>summary::after{content:"펼치기 ▼";color:#F4A56B;font-size:14px
 details.more[open]>summary::after{content:"접기 ▲"}
 details.more>summary:hover{filter:brightness(1.15)}
 details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.nw{white-space:nowrap}
 </style>
 
 <div class="wrap">
@@ -325,7 +326,7 @@ details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:
 
   <footer><p style="margin:0 0 8px"><b>계산 기준 (2026년 10월)</b> · 대출 금리 연 4.66%(2026년 8월 한국은행 주택담보대출 평균), 30년 원리금균등 · LTV 70%(생애최초 80%) · DSR 40%(은행 심사용 가산금리 0.75%p 반영) · 취득세는 집값·면적·생애최초 감면에 따라 자동 계산 · 중개수수료는 법정 상한 요율(부가세 포함)</p>이 결과는 참고 자료이며 매수 권유가 아닙니다. 대출 가능액은 위 가정값으로 계산한 간이 추정이며, 실제 한도는 금융기관 심사에 따라 다릅니다. 가격은 국토교통부 실거래가를 참고한 추정치이며, 가격 흐름은 최근 6개월과 그 전 6개월의 거래 가운데값을 비교한 참고치입니다. 동별 평가는 전문가의 현장 판단을 점수로 옮긴 것입니다.
     <dl class="biz">
-      <dt>홈페이지</dt><dd>ygs-home.co.kr (준비 중)</dd>
+      <dt>홈페이지</dt><dd><a href="https://ygs-home.co.kr" style="color:inherit">ygs-home.co.kr</a></dd>
       <dt>상호</dt><dd>주식회사 와이지에스 (YGS)</dd>
       <dt>대표</dt><dd>양**</dd>
       <dt>사업자등록번호</dt><dd>319-81-*****</dd>
@@ -465,9 +466,9 @@ function budgetHTML(q,B){
    :q.debt>0&&B.debtExcluded?`<dd class="full hint">기존 ${q.debtType==="jeonse"?"전세자금대출은 이사 때 보증금으로":"주택담보대출은 지금 집을 팔 때"} 갚으므로 계산에서 뺐습니다. 보유 현금에는 ${q.debtType==="jeonse"?"돌려받을 보증금":"집 판 돈"}에서 대출을 뺀 금액을 넣으세요.</dd>`
    :q.debt>0?`<dt>기존 대출 한 달 상환</dt><dd>약 ${Math.round(B.debtM).toLocaleString()}만원</dd><dd class="full hint">${won(q.debt)}을 연 ${(q.rate*100).toFixed(1)}%, ${B.dYrs}년 원리금균등으로 갚는다고 가정했습니다${q.debtType==="credit"?" (신용대출은 은행 DSR 계산 때 5년 기준)":""}. 실제 상환액을 아시면 직접 입력하세요.</dd>`:""}
   <dt><b>받을 수 있는 대출 (최대)</b></dt><dd><b>${won(B.loan)}</b></dd>
-  <dt>한 달 상환 (원리금균등 ${q.yrs}년)</dt><dd>${Math.round(B.monthly).toLocaleString()}만원 · 월소득의 ${Math.round(B.burden*100)}%</dd>
-  <dd class="big">최대로 살 수 있는 집값 약 ${won(Math.floor(B.price/100)*100)}</dd>
-  <dt><b>적정선 (월소득의 25%)</b></dt><dd><b>${won(Math.floor(B.pSafe/100)*100)}</b> · 월 ${Math.round(B.safeMonthly).toLocaleString()}만원</dd>
+  <dt>한 달 상환 (원리금균등 ${q.yrs}년)</dt><dd><span class="nw">${Math.round(B.monthly).toLocaleString()}만원</span><br><span class="nw">월소득의 ${Math.round(B.burden*100)}%</span></dd>
+  <dd class="big">최대로 살 수 있는 집값 <span class="nw">약 ${won(Math.floor(B.price/100)*100)}</span></dd>
+  <dt><b>적정선 (월소득의 25%)</b></dt><dd><b class="nw">${won(Math.floor(B.pSafe/100)*100)}</b><br><span class="nw">월 ${Math.round(B.safeMonthly).toLocaleString()}만원</span></dd>
   ${B.pSafe>=B.price-100?`<dd class="full hint">지금 조건은 최대 금액이 이미 적정선(월소득 25%) 안에 있습니다.</dd>`:""}
   <dd class="dsrnote">월소득의 25% 이내면 안정권, 40%는 은행이 허용하는 최대치입니다. 단지마다 표시된 한 달 상환액을 보고 내 형편에 맞게 고르세요.</dd>
   <dd class="full"><details class="more"><summary>대출 계산 자세히</summary><dl class="budget num" style="margin:0">
@@ -609,7 +610,7 @@ $("exCount").textContent=APTS.filter(hasOwnEx).length; $("aptCount").textContent
 (function sample(){
   const q={cash:12000,income:6000,debt:0,debtType:"mort",debtMIn:0,first:"no",stress:0.0075,size:"84",kids:"school",gu:"any",newpref:"any",prefs:[1,5,2],ltv:0.7,dsr:0.4,rate:0.0466,yrs:30,fee:0.02};
   const B=budget(q), m=match(q,B); if(!m.length) return;
-  $("sampleBudget").innerHTML=`<dt>최대로 살 수 있는 집값</dt><dd>약 ${won(Math.floor(B.price/100)*100)}</dd><dt>적정선 (월소득 25%)</dt><dd>약 ${won(Math.floor(B.pSafe/100)*100)}</dd>`;
+  $("sampleBudget").innerHTML=`<dt>최대로 살 수 있는 집값</dt><dd class="nw">약 ${won(Math.floor(B.price/100)*100)}</dd><dt>적정선 (월소득 25%)</dt><dd class="nw">약 ${won(Math.floor(B.pSafe/100)*100)}</dd>`;
   const hasOwn=r=>r.a.ex&&(r.a.ex.sell||r.a.ex.care||r.a.ex.say); const ex=m.slice(0,10).find(hasOwn)||m[0];
   $("sampleCard").innerHTML=cardHTML(ex,0,q,B,"예시 단지");
 })();
