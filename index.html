@@ -228,6 +228,7 @@ details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:
 .rk-box{background:var(--panel);border:2px solid var(--red);border-radius:12px;max-width:420px;width:100%;padding:20px 18px;display:flex;flex-direction:column;gap:10px}
 .rk-head{background:var(--red);color:#fff;font-weight:800;border-radius:6px;padding:7px 10px;width:max-content}
 .rk-box p{margin:0;line-height:1.6}.rk-red{color:var(--red)}.rk-alt{color:var(--ink)}
+.gunote{border:2px solid var(--accent,#E8772E);border-radius:8px;padding:10px 12px;margin:0 0 12px;line-height:1.6;font-weight:600}
 </style>
 
 <div class="wrap">
@@ -492,6 +493,9 @@ function match(q,B){
     else { const j3=J[2], w1=Wn[0]; if(w1&&(!j3||w1.total>=j3.total*0.9)) top.push(w1); else if(j3) top.push(j3); }
     ord=top.concat(ord.filter(r=>!top.includes(r)));
   }
+  if(q.gu==="완산구"||q.gu==="덕진구"){ const want=q.gu==="완산구"?"서부":"북부"; const slots=[],ws=[];
+    ord.forEach((r,k)=>{ if(isW(r)){slots.push(k);ws.push(r);} });
+    ws.sort((x,y)=>(y.d.rg===want)-(x.d.rg===want)); slots.forEach((k,j)=>ord[k]=ws[j]); }
   const o3=ord.slice(0,2).filter(r=>r.a.only3);
   if(o3.length){ ord=ord.filter(r=>!o3.includes(r)); ord.splice(Math.min(2,ord.length),0,...o3); }
   return ord;
@@ -536,7 +540,14 @@ function run(){
     $("payBox").hidden=true; return; }
   $("payBox").hidden=false;
   const GR={S:5,A:4,B:3,C:2,D:1}; const top3=m.slice(0,3); const ag=r=>aptGrade(r.a)||grade(r.d); const free=top3.reduce((lo,r)=>GR[ag(r)]<=GR[ag(lo)]?r:lo,top3[0]); const freeRank=top3.indexOf(free)+1;
-  $("teaser").innerHTML=`<div class="teaser-head">추천 ${top3.length}곳 중 1곳 미리 보기 (무료)</div>`+cardHTML(free,freeRank-1,q,B,`추천 ${freeRank}위 · 무료 공개`)+`<p class="hint">${top3.length>1?"나머지 추천 아파트와 ":""}단지별 전체 분석은 리포트에서 확인하세요.</p>`;
+  let guNote=""; if(q.gu!=="any" && !m.some(r=>r.d.gu===q.gu)){
+    const cond=[q.newpref==="high"?"신축 10년 이내":"",SIZE_LABEL[q.size].split("(")[0].trim(),`${won(Math.floor(B.price/1000)*1000)} 이하`].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(", ");
+    const inGu=qq=>{const BB=budget(qq);return match(qq,BB).filter(r=>r.d.gu===q.gu).length;};
+    const alts=[]; if(q.newpref==="high") alts.push(["연식 상관없음으로 바꾸면",{...q,newpref:"any"}]);
+    ["74","59"].filter(z=>+z<+q.size).forEach(z=>alts.push([`${SIZE_LABEL[z].split("(")[0].trim()}로 줄이면`,{...q,size:z}]));
+    let alt=""; for(const [t,qq] of alts){const n=inGu(qq); if(n){alt=` ${t} ${q.gu} 단지 <b>${n}곳</b>이 나옵니다.`;break;}}
+    guNote=`<div class="gunote">${q.gu}에는 지금 조건(${cond})에 맞는 단지가 없습니다.${alt} 아래는 다른 지역의 대안입니다.</div>`; }
+  $("teaser").innerHTML=guNote+`<div class="teaser-head">추천 ${top3.length}곳 중 1곳 미리 보기 (무료)</div>`+cardHTML(free,freeRank-1,q,B,`추천 ${freeRank}위 · 무료 공개`)+`<p class="hint">${top3.length>1?"나머지 추천 아파트와 ":""}단지별 전체 분석은 리포트에서 확인하세요.</p>`;
   $("dongs").innerHTML=top.map((r,ti)=>{ const g=grade(r.d), n=m.filter(x=>x.d===r.d).length, pick=r.a.lead?"대장 아파트 1곳":"가장 잘 맞는 1곳", isFree=(r.a===free.a);
     return `<div class="dong"><div class="grade" style="background:var(--g-${g})">${g}</div><div>
       <h3>${r.d.name} <span class="zone">${r.d.gu} · ${zoneOf(r)}</span></h3>
