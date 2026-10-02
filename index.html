@@ -174,6 +174,37 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .card h3{font-size:17px;letter-spacing:-.02em}
   .dong h3{font-size:17px}
 }
+/* 입력칸·선택칸 구분 강화: 아이보리 바탕 + 남색 테두리, 누르면 오렌지 */
+:root{--field:#FFF8EE;--field-line:#5A6785}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--field:#2B303A;--field-line:#7C89A8}}
+:root[data-theme="dark"]{--field:#2B303A;--field-line:#7C89A8}
+input[type=number],select{background-color:var(--field);border:1.5px solid var(--field-line);font-weight:500}
+input[type=number]:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.seg label{background:var(--field);border:1.5px solid var(--field-line)}
+.seg label:has(input:checked){border-color:var(--gold);background:var(--gold)}
+.seg input:checked+span{color:#111}
+/* 입력칸 강조 강화: 선택칸은 남색 채움+흰 글씨, 숫자칸은 연한 오렌지 바탕+굵은 남색 테두리 */
+:root{--fnavy:#1F2A44;--fnavy-ink:#FFFFFF;--fin:#FFF1E3}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--fnavy:#34497A;--fnavy-ink:#FFFFFF;--fin:#2E2620}}
+:root[data-theme="dark"]{--fnavy:#34497A;--fnavy-ink:#FFFFFF;--fin:#2E2620}
+select{-webkit-appearance:none;appearance:none;background-color:var(--fnavy);color:var(--fnavy-ink);border:2px solid var(--fnavy);font-weight:700;padding-right:36px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23E8772E' stroke-width='2.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+select option{background:#FFFFFF;color:#111111}
+input[type=number]{background-color:var(--fin);border:2px solid var(--fnavy);font-weight:700;color:var(--ink)}
+input[type=number]:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,119,46,.35)}
+.seg label{background:var(--panel);border:2px solid var(--fnavy);font-weight:600}
+.seg label:has(input:checked){background:var(--gold);border-color:var(--gold)}
+.seg input:checked+span{color:#111;font-weight:800}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg label{border-color:#7C89A8}:root:not([data-theme="light"]) .seg label:has(input:checked){border-color:var(--gold)}}
+/* "자세히 보기" 버튼처럼 눈에 띄게: 남색 바탕 + 흰 글씨 + 오렌지 화살표 */
+details.more{border-top:0;padding-top:4px}
+details.more>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;background:var(--fnavy);color:#fff;border-radius:8px;padding:11px 16px;font-size:16px;font-weight:700}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"펼치기 ▼";color:#F4A56B;font-size:14px;font-weight:700}
+details.more[open]>summary::after{content:"접기 ▲"}
+details.more>summary:hover{filter:brightness(1.15)}
+details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </style>
 
 <div class="wrap">
