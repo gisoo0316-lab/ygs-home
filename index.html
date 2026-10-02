@@ -208,6 +208,13 @@ details.more>summary:hover{filter:brightness(1.15)}
 details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .nw{white-space:nowrap}
 .newslink{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--fnavy);color:#fff;border-radius:10px;padding:14px 16px;text-decoration:none;font-weight:700}.newslink span{color:#F4A56B;font-size:14px;white-space:nowrap}
+/* 적정선 초과 카드 */
+:root{--red:#D93025;--red-soft:#FDECEA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--red:#FF6B5E;--red-soft:#3A1C1A}}
+:root[data-theme="dark"]{--red:#FF6B5E;--red-soft:#3A1C1A}
+.card.stretch{border:2px solid var(--red);background:linear-gradient(var(--red-soft),var(--panel) 160px)}
+.stretchbar{background:var(--red);color:#fff;font-weight:700;font-size:14px;border-radius:6px;padding:7px 10px;line-height:1.4}
+.card.stretch .hot{color:var(--red)!important}
 </style>
 
 <div class="wrap">
@@ -233,7 +240,7 @@ details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:
   <section class="panel" aria-labelledby="h-sample">
     <span class="sample-tag">리포트 예시</span>
     <h2 id="h-sample">이런 결과를 받아 보실 수 있습니다</h2>
-    <p class="hint" style="margin:0">예시 고객: 보유 현금 1억 2천만원 · 부부 연소득 6천만원 · 전용 84㎡ · 초·중학생 자녀 · 학군 중시</p>
+    <p class="hint" style="margin:0">예시 고객: 지금 집을 팔고 갈아타는 가족 · 보유 현금 5억 3천만원 · 부부 연소득 7천만원 · 전용 84㎡ · 초·중학생 자녀 · 학군 중시</p>
     <dl class="budget num" id="sampleBudget"></dl>
     <div id="sampleCard"></div>
     <p class="hint" style="margin:0">실제 리포트에는 추천 아파트 3곳과 단지별 상세 분석, 가족에게 보낼 카톡 요약이 들어갑니다.</p>
@@ -243,8 +250,8 @@ details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:
     <div class="stepnote">1단계 · 내 조건 입력 (예시 값이 들어 있습니다)</div>
     <h2 id="h-in">내 조건</h2>
     <form id="f">
-      <div class="field"><label for="cash">보유 현금(자기자본)</label><div class="unit"><input id="cash" type="number" min="0" step="500" value="12000"><span>만원</span></div></div>
-      <div class="field"><label for="income">연소득 (세전, 부부합산 · 대출 한도 계산에 꼭 필요)</label><div class="unit"><input id="income" type="number" min="0" step="100" value="6000"><span>만원</span></div></div>
+      <div class="field"><label for="cash">보유 현금(자기자본)</label><div class="unit"><input id="cash" type="number" min="0" step="500" value="53000"><span>만원</span></div></div>
+      <div class="field"><label for="income">연소득 (세전, 부부합산 · 대출 한도 계산에 꼭 필요)</label><div class="unit"><input id="income" type="number" min="0" step="100" value="7000"><span>만원</span></div></div>
       <div class="field"><label for="debt">기존 대출 남은 금액 (총액)</label><div class="unit"><input id="debt" type="number" min="0" step="100" value="0"><span>만원</span></div><div class="hint">없으면 0</div></div>
       <div class="field"><label for="debtType">기존 대출 종류</label><select id="debtType"><option value="jeonse">전세자금대출 (이사 때 갚음)</option><option value="sell">지금 집 주담대 (팔고 이사)</option><option value="mort" selected>계속 갚을 주택담보대출</option><option value="credit">신용대출·기타</option></select></div>
       <div class="field"><label for="debtM">기존 대출 한 달 상환액 (아시면 입력)</label><div class="unit"><input id="debtM" type="number" min="0" step="5" value="0"><span>만원</span></div><div class="hint">0이면 대출 종류에 맞춰 자동 계산합니다.</div></div>
@@ -382,7 +389,14 @@ function expertScore(d,kids){
 function prefScore(d,prefs,ap){ // 1순위 50% · 2순위 30% · 3순위 20%. 병원·상권·공원·교통은 단지 위치 기준 거리 점수 반영
   const pw=[0.5,0.3,0.2]; return prefs.reduce((a,p,i)=>a+(p===10?hhScore(ap):p===9?pkScore(ap):((ap&&ap.f&&ap.f[p]!=null)?ap.f[p]:d.s[p]))*pw[i],0); }
 function dongScore(d,kids,prefs){ return prefs ? expertScore(d,kids)*0.5+prefScore(d,prefs)*0.5 : expertScore(d,kids); }
-function grade(d){ const base=expertScore(d,"none"); return CUT.find(c=>base>=c[1])[0]; }
+// 평당가 = 실거래가 ÷ (전용면적 × 0.408 = 공급면적 평 환산, 전용 84㎡ ≈ 34평)
+const PY_AREA={p84:84,p74:74,p105:105,p59:59,p115:115};
+function ppy(a){ for(const k of ["p84","p74","p105","p59","p115"]) if(a[k]) return a[k]*10000/(PY_AREA[k]*0.408); return null; }
+function pyGrade(v){ return v>=1400?"S":v>=1200?"A":v>=1000?"B":v>=800?"C":"D"; }
+function aptGrade(a){ const v=ppy(a); return v?pyGrade(v):null; }
+const DONG_PY=(()=>{const g={}; APTS.forEach(a=>{ if(a.excl||a.only3||a.pen) return; const v=ppy(a); if(v)(g[a.d]=g[a.d]||[]).push(v); });
+  const o={}; Object.keys(g).forEach(k=>{const v=g[k].sort((x,y)=>y-x).slice(0,3); o[k]=v.reduce((s,x)=>s+x,0)/v.length;}); return o;})();
+function grade(d){ if(DONG_PY[d.name]) return pyGrade(DONG_PY[d.name]); const base=expertScore(d,"none"); return CUT.find(c=>base>=c[1])[0]; }
 function read(){
   const v=id=>parseFloat($(id).value)||0, r=n=>document.querySelector(`input[name=${n}]:checked`).value;
   return {cash:v("cash"),income:v("income"),debt:v("debt"),first:r("first"),stress:v("stress")/100,debtType:$("debtType").value,debtMIn:v("debtM"),size:$("size").value,kids:r("kids"),gu:r("gu"),newpref:r("newpref"),prefs:[+$("p1").value,+$("p2").value,+$("p3").value],
@@ -429,7 +443,7 @@ function match(q,B){
     const types=a.types||["59","84"]; if(!types.includes(q.size)) return; // 해당 평형이 없는 단지는 제외 (큰 평형은 입력표에서 확인된 단지만)
     const price=aptPrice(a,q.size); if(price>B.price) return;
     const ds=(expertScore(d,q.kids)*0.5+prefScore(d,q.prefs,a)*0.5)*10, ps=prefScore(d,q.prefs,a)*10;
-    const ratio=price/B.price, fit=Math.max(0,Math.min(100,100-Math.abs(0.9-ratio)*160));
+    const ratio=price/B.price, sr=price/B.pSafe, fit=price<=B.pSafe?(sr>=0.6?100:Math.max(0,100-(0.6-sr)*200)):Math.max(0,55-(price-B.pSafe)/Math.max(1,B.price-B.pSafe)*55);
     const age=nowYr-a.yr; if(q.newpref==="high" && age>20 && (!a.lead||a.wj)) return; let nw=age<=5?100:age<=10?85:age<=15?70:age<=20?55:35;
     const nwW=q.newpref==="high"?0.30:0.10;
     const gu=q.gu==="any"||q.gu===d.gu?100:(d.gu==="완주군"&&((q.gu==="덕진구"&&d.rg==="북부")||(q.gu==="완산구"&&d.rg==="서부")))?50:0;
@@ -443,7 +457,7 @@ function match(q,B){
     const parts={"내 선호 3가지":ps,"동네 종합":ds,"단지 평가":apt,"예산 적정":fit,"연식":nw}; if(q.gu!=="any") parts["선호 지역"]=gu;
     res.push({a,d,price,age,total:Math.round(total),parts});
   });
-  res.sort((x,y)=>y.total-x.total);
+  res.sort((x,y)=>y.total-x.total); const best=res.length?res[0].total:0; res.forEach(r=>{r.disp=Math.max(50,Math.min(99,Math.round(98-(best-r.total)*1.5)));});
   // 추천 순서: 서로 다른 동네가 먼저 오도록(같은 동네 쏠림 방지)
   const first=[],rest=[],seen=new Set();
   res.forEach(r=>{ if(!seen.has(r.d.name)&&first.length<3){seen.add(r.d.name);first.push(r);} else rest.push(r); });
@@ -497,7 +511,7 @@ function run(){
     $("dongs").innerHTML=`<p>지금 조건(${SIZE_LABEL[q.size]}, 약 ${won(Math.floor(B.price/100)*100)} 이하)에 맞는 단지가 없습니다.</p>`+(alt.length?`<p>이렇게 바꾸면 추천이 나옵니다:</p><ul class="why">${alt.map(x=>`<li>${x}</li>`).join("")}</ul>`:`<p>보유 현금이나 평형을 조정해 다시 보세요.</p>`);
     $("payBox").hidden=true; return; }
   $("payBox").hidden=false;
-  const GR={S:5,A:4,B:3,C:2,D:1}; const top3=m.slice(0,3); const free=top3.reduce((lo,r)=>GR[grade(r.d)]<=GR[grade(lo.d)]?r:lo,top3[0]); const freeRank=top3.indexOf(free)+1;
+  const GR={S:5,A:4,B:3,C:2,D:1}; const top3=m.slice(0,3); const ag=r=>aptGrade(r.a)||grade(r.d); const free=top3.reduce((lo,r)=>GR[ag(r)]<=GR[ag(lo)]?r:lo,top3[0]); const freeRank=top3.indexOf(free)+1;
   $("teaser").innerHTML=`<div class="teaser-head">추천 ${top3.length}곳 중 1곳 미리 보기 (무료)</div>`+cardHTML(free,freeRank-1,q,B,`추천 ${freeRank}위 · 무료 공개`)+`<p class="hint">${top3.length>1?"나머지 추천 아파트와 ":""}단지별 전체 분석은 리포트에서 확인하세요.</p>`;
   $("dongs").innerHTML=top.map((r,ti)=>{ const g=grade(r.d), n=m.filter(x=>x.d===r.d).length, pick=r.a.lead?"대장 아파트 1곳":"가장 잘 맞는 1곳", isFree=(r.a===free.a);
     return `<div class="dong"><div class="grade" style="background:var(--g-${g})">${g}</div><div>
@@ -547,7 +561,7 @@ function reasons(r,q,B){
   return out;
 }
 function cautions(r,B,q){
-  const out=[r.d.con];
+  const out=(r.age<=5&&/구축/.test(r.d.con))?[]:[r.d.con];
   if(r.a.warn) out.unshift(r.a.warn);
   if(q.kids!=="none" && r.d.gu==="완주군" && (r.noJ||q.gu==="완주군")) out.unshift("초·중학교는 단지 인근에서 다닐 수 있지만, 고등학교는 전주 진학이 일반적입니다. 고등학교 진학 시점에는 전주 이사를 고려하셔야 합니다.");
   if(trendOK(r.a,q)&&r.a.tr[1]<-3) out.push(`최근 6개월 ${SIZE_LABEL[r.a.tr[0]].split("(")[0]} 거래가가 그 전 6개월보다 약 ${Math.abs(r.a.tr[1])}% 내렸습니다. 추가 하락 여부를 확인하세요.`);
@@ -567,23 +581,23 @@ function cardHTML(r,i,q,B,label){ const g=grade(r.d);
     const mo=monthlyOf(r,q,B), rk=pkRank(r.a);
     const key=[dongPro(r)]; if(r.a.ygs) key.push(`YGS 대표가 ${r.a.ygs}년 직접 분양한 단지`); if(r.a.lead) key.push("이 동의 대표 단지"); if(rk&&rk<=30) key.push(`주차 여유 (전주·완주 ${rk}위)`);
     const exTxt=expertText(r.a);
-    return `<article class="card">
+    return `<article class="card${mo.pct>0.25?" stretch":""}">${mo.pct>0.25?`<div class="stretchbar">적정선 초과 · 한 달 상환이 월소득의 ${Math.round(mo.pct*100)}%로, 무리해야 가능한 집입니다</div>`:""}
       <div class="top"><div><div class="rank">${label||("추천 "+(i+1))}</div>${r.a.ygs?`<div class="ygsbadge">YGS 직접 분양 단지 · ${r.a.ygs}년</div>`:""}<h3>${r.a.n}${hasOwnEx(r.a)?` <span class="exbadge">전문가 의견 반영</span>`:""}</h3>
-        <div class="meta"><span>${r.d.gu} ${r.d.name}</span><span>준공 ${r.a.yr}년</span><span>${r.a.hh?r.a.hh+"세대":"세대수 확인 중"}</span></div></div>
-        <div class="score num"><b>${r.total}</b><small>조건 일치 점수</small></div></div>
+        <div class="meta"><span>${r.d.gu} ${r.d.name}</span><span>${(r.a.est&&/(\d{4})년 (\d+)월 입주 예정/.test(r.a.est))?r.a.est.match(/(\d{4})년 (\d+)월 입주 예정/)[0]:"준공 "+r.a.yr+"년"}</span><span>${r.a.hh?r.a.hh+"세대":"세대수 확인 중"}</span></div></div>
+        <div class="score num"><b>${r.disp||r.total}</b><small>조건 일치 점수</small></div></div>
       <dl class="keyline num">
         <dt>${SIZE_LABEL[q.size].split("(")[0]} ${r.a.est?"분양가":"실거래"}</dt><dd>${won(r.price)}${(()=>{const n=(r.a.cnt&&r.a.cnt[q.size])?r.a.cnt[q.size][0]:0;return (n<=3&&!r.a.est)?` <span class="rare">· 매물 드묾 (1년 ${n}건)</span>`:""})()}</dd>
-        <dt>한 달 상환</dt><dd class="${mo.pct>0.25?"hot":""}">${Math.round(mo.m).toLocaleString()}만원 · 월소득의 ${Math.round(mo.pct*100)}%${mo.pct>0.25?" (부담 큼)":""}</dd>
+        <dt>한 달 상환</dt><dd class="${mo.pct>0.25?"hot":""}">${Math.round(mo.m).toLocaleString()}만원 · 월소득의 ${Math.round(mo.pct*100)}%${mo.pct>0.25?" (적정선 초과)":""}</dd>
         ${r.a.pk?`<dt>주차</dt><dd>세대당 ${r.a.pk}대 · 전주·완주 ${rk}위 / ${PK_TOTAL}곳</dd>`:""}
       </dl>
       <ul class="why">${key.slice(0,3).map(x=>`<li>${x}</li>`).join("")}</ul>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="mapbtn" href="${mapUrl(r.a)}" target="_blank" rel="noopener">지도 보기</a>${r.a.xy?`<a class="mapbtn" href="https://map.kakao.com/link/roadview/${r.a.xy[1]},${r.a.xy[0]}" target="_blank" rel="noopener">로드뷰 보기</a>`:""}</div>
       <div class="expert"><div class="t">전문가 의견</div><div class="row">${exTxt}</div></div>
       <details class="more"><summary>자세히 보기</summary>
-      <div class="meta num" style="margin-bottom:10px"><span>${r.d.gu} ${r.d.name} · ${g}등급</span>${r.a.bld?`<span>시공 ${r.a.bld}</span>`:""}<span>${r.a.est?"시세 "+r.a.est:(r.a.cnt&&r.a.cnt[q.size])?"거래 "+r.a.cnt[q.size][0]+"건, "+r.a.cnt[q.size][1].replace("-",".")+"~"+r.a.cnt[q.size][2].replace("-","."):"거래 적음"}</span>${r.a.vol?`<span>최근 1년 거래 ${r.a.vol}건</span>`:""}${r.a.near?`<span>${r.a.near.map(n=>n[0]+" "+n[1]+"km").join(" · ")}</span>`:""}${r.a.asg?`<span>배정 초등학교 ${r.a.asg.el} ${r.a.asg.d}m${r.a.asg.memo?" ("+r.a.asg.memo+")":""}</span>`:""}${r.a.asg&&r.a.asg.mi?`<span>중학교 ${r.a.asg.mi}</span>`:""}${r.a.asg&&r.a.asg.hi?`<span>고등학교 ${r.a.asg.hi}</span>`:""}${r.a.sch?`<span>가까운 학교 ${r.a.sch.el?r.a.sch.el[0]+" "+r.a.sch.el[1]+"m":""}${r.a.sch.mi?" · "+r.a.sch.mi[0]+" "+r.a.sch.mi[1]+"m":""} · 반경 1km 학원 ${r.a.sch.ac}곳</span>`:""}${trendTxt(r.a,q)?`<span>${trendTxt(r.a,q)}</span>`:""}</div>
+      <div class="meta num" style="margin-bottom:10px"><span>${r.d.gu} ${r.d.name} · 동네 ${g}등급</span>${ppy(r.a)?`<span>이 단지 ${aptGrade(r.a)}등급 · 평당 약 ${(Math.round(ppy(r.a)/10)*10).toLocaleString()}만원</span>`:""}${r.a.bld?`<span>시공 ${r.a.bld}</span>`:""}<span>${r.a.est?"시세 "+r.a.est:(r.a.cnt&&r.a.cnt[q.size])?"거래 "+r.a.cnt[q.size][0]+"건, "+r.a.cnt[q.size][1].replace("-",".")+"~"+r.a.cnt[q.size][2].replace("-","."):"거래 적음"}</span>${r.a.vol?`<span>최근 1년 거래 ${r.a.vol}건</span>`:""}${r.a.near?`<span>${r.a.near.map(n=>n[0]+" "+n[1]+"km").join(" · ")}</span>`:""}${r.a.asg?`<span>배정 초등학교 ${r.a.asg.el} ${r.a.asg.d}m${r.a.asg.memo?" ("+r.a.asg.memo+")":""}</span>`:""}${r.a.asg&&r.a.asg.mi?`<span>중학교 ${r.a.asg.mi}</span>`:""}${r.a.asg&&r.a.asg.hi?`<span>고등학교 ${r.a.asg.hi}</span>`:""}${r.a.sch?`<span>가까운 학교 ${r.a.sch.el?r.a.sch.el[0]+" "+r.a.sch.el[1]+"m":""}${r.a.sch.mi?" · "+r.a.sch.mi[0]+" "+r.a.sch.mi[1]+"m":""} · 반경 1km 학원 ${r.a.sch.ac}곳</span>`:""}${trendTxt(r.a,q)?`<span>${trendTxt(r.a,q)}</span>`:""}</div>
       <div class="bars num" style="margin-bottom:10px">${bars}</div>
       <div class="sec" style="margin-bottom:10px"><h4>추천 이유</h4><ul>${reasons(r,q,B).map(x=>`<li>${x}</li>`).join("")}</ul></div>
-      <div class="sec warn"><h4>조심할 점</h4><ul>${cautions(r,B,q).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+      ${(()=>{const cs=cautions(r,B,q);return cs.length?`<div class="sec warn"><h4>조심할 점</h4><ul>${cs.map(x=>`<li>${x}</li>`).join("")}</ul></div>`:""})()}
       </details>
     </article>`}
 function report(){
@@ -591,7 +605,7 @@ function report(){
   $("cards").innerHTML=m.slice(0,3).map((r,i)=>cardHTML(r,i,q,B)).join("");
   $("tips").hidden=q.kids==="none";
   const seen=[]; m.forEach(r=>{ if(!seen.find(s=>s.d===r.d)) seen.push(r); });
-  const lines=["[YGS 내집찾기 요약]",
+  const lines=["[내집찾기 요약]",
     `보유 현금 ${won(q.cash)} 기준 최대 집값 약 ${won(Math.floor(B.price/100)*100)} (적정선 약 ${won(Math.floor(B.pSafe/100)*100)})이에요.`,
     `내가 고른 기준: ${q.prefs.map((p,i)=>(i+1)+"순위 "+PREF_LABEL[p]).join(", ")}`,
     `추천 동네: ${seen.slice(0,3).map(r=>r.d.name+"("+grade(r.d)+"등급)").join(", ")}`,
@@ -612,11 +626,11 @@ $("again").onclick=()=>{$("f").scrollIntoView({behavior:"smooth"});$("cash").foc
 $("consultBtn").onclick=()=>{ if(!$("agree").checked){$("agree").focus();$("agree").parentElement.style.color="var(--warn)";return;} $("consultForm").hidden=true;$("consultDone").hidden=false;};
 $("exCount").textContent=APTS.filter(hasOwnEx).length; $("aptCount").textContent=APTS.length;
 (function sample(){
-  const q={cash:12000,income:6000,debt:0,debtType:"mort",debtMIn:0,first:"no",stress:0.0075,size:"84",kids:"school",gu:"any",newpref:"any",prefs:[1,5,2],ltv:0.7,dsr:0.4,rate:0.0466,yrs:30,fee:0.02};
+  const q={cash:53000,income:7000,debt:0,debtType:"mort",debtMIn:0,first:"no",stress:0.0075,size:"84",kids:"school",gu:"any",newpref:"any",prefs:[1,5,2],ltv:0.7,dsr:0.4,rate:0.0466,yrs:30,fee:0.02};
   const B=budget(q), m=match(q,B); if(!m.length) return;
   $("sampleBudget").innerHTML=`<dt>최대로 살 수 있는 집값</dt><dd class="nw">약 ${won(Math.floor(B.price/100)*100)}</dd><dt>적정선 (월소득 25%)</dt><dd class="nw">약 ${won(Math.floor(B.pSafe/100)*100)}</dd>`;
-  const hasOwn=r=>r.a.ex&&(r.a.ex.sell||r.a.ex.care||r.a.ex.say); const ex=m.slice(0,10).find(hasOwn)||m[0];
-  $("sampleCard").innerHTML=cardHTML(ex,0,q,B,"예시 단지");
+  const hasOwn=r=>r.a.ex&&(r.a.ex.sell||r.a.ex.care||r.a.ex.say); const ex=m.find(r=>/서신더샵에피트/.test(r.a.n))||m.slice(0,10).find(hasOwn)||m[0];
+  $("sampleCard").innerHTML=cardHTML(ex,0,q,B,"예시 단지"); const sc=$("sampleCard").querySelector(".score"); if(sc) sc.remove();
 })();
 run();
 </script>
