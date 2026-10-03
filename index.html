@@ -283,9 +283,10 @@ details.more>summary:focus-visible{outline:3px solid var(--gold);outline-offset:
         <label><input type="radio" name="gu" value="덕진구"><span>덕진구</span></label>
         <label><input type="radio" name="gu" value="완주군"><span>완주군</span></label></div></div>
       <div class="field full"><label>내가 중요하게 여기는 3가지 (순서대로 고르세요)</label><div class="prefs"><div class="field"><label for="p1">1순위</label><select id="p1"><option value="1" selected>학군·학원가</option><option value="2">역·도로 교통</option><option value="5">신축 아파트</option><option value="3">상권·생활 편의</option><option value="4">큰 병원 가까움</option><option value="6">공원·주거 환경</option><option value="7">개발 호재</option><option value="0">도심·직장 접근</option><option value="8">시세 안정·선호도</option><option value="9">주차 여유</option><option value="10">대단지</option></select></div><div class="field"><label for="p2">2순위</label><select id="p2"><option value="1">학군·학원가</option><option value="2">역·도로 교통</option><option value="5" selected>신축 아파트</option><option value="3">상권·생활 편의</option><option value="4">큰 병원 가까움</option><option value="6">공원·주거 환경</option><option value="7">개발 호재</option><option value="0">도심·직장 접근</option><option value="8">시세 안정·선호도</option><option value="9">주차 여유</option><option value="10">대단지</option></select></div><div class="field"><label for="p3">3순위</label><select id="p3"><option value="1">학군·학원가</option><option value="2" selected>역·도로 교통</option><option value="5">신축 아파트</option><option value="3">상권·생활 편의</option><option value="4">큰 병원 가까움</option><option value="6">공원·주거 환경</option><option value="7">개발 호재</option><option value="0">도심·직장 접근</option><option value="8">시세 안정·선호도</option><option value="9">주차 여유</option><option value="10">대단지</option></select></div></div><div class="hint" style="margin:0">1순위 40%, 2순위 30%, 3순위 30% 비중으로 반영하고, 전문가 동별 평가와 절반씩 합쳐 추천합니다.</div></div>
-      <div class="field full"><label>신축 선호</label><div class="seg" role="radiogroup">
-        <label><input type="radio" name="newpref" value="high"><span>신축 선호 (10년 이내)</span></label>
-        <label><input type="radio" name="newpref" value="any" checked><span>연식 상관없음</span></label></div></div>
+      <div class="field full"><label>연식 (지은 지 몇 년)</label><div class="seg" role="radiogroup">
+        <label><input type="radio" name="newpref" value="any" checked><span>상관없음</span></label>
+        <label><input type="radio" name="newpref" value="mid"><span>15년 이내</span></label>
+        <label><input type="radio" name="newpref" value="high"><span>10년 이내</span></label></div><div class="hint">15년 이내는 준신축, 10년 이내는 신축입니다.</div></div>
       <details class="rules" hidden><summary>대출 계산 기준 (LTV 기준 · 규정이 바뀌면 여기만 고치면 됩니다)</summary>
         <div class="rulesgrid">
           <div class="field"><label for="ltv">LTV(집값 대비 대출)</label><div class="unit"><input id="ltv" type="number" value="70" step="5"><span>%</span></div></div>
@@ -465,8 +466,8 @@ function match(q,B){
     const price=aptPrice(a,q.size); if(price>B.price) return;
     const ds=(expertScore(d,q.kids)*0.5+prefScore(d,q.prefs,a)*0.5)*10, ps=prefScore(d,q.prefs,a)*10;
     const ratio=price/B.price, sr=price/B.pSafe, fit=price<=B.pSafe?(sr>=0.6?100:Math.max(0,100-(0.6-sr)*200)):Math.max(0,55-(price-B.pSafe)/Math.max(1,B.price-B.pSafe)*55);
-    const age=nowYr-a.yr; if(q.newpref==="high" && age>10) return; let nw=age<=5?100:age<=10?85:age<=15?70:age<=20?55:35;
-    const nwW=q.newpref==="high"?0.30:0.10;
+    const age=nowYr-a.yr; if((q.newpref==="high" && age>10)||(q.newpref==="mid" && age>15)) return; let nw=age<=5?100:age<=10?85:age<=15?70:age<=20?55:35;
+    const nwW=q.newpref==="high"?0.30:q.newpref==="mid"?0.20:0.10;
     const gu=q.gu==="any"||q.gu===d.gu?100:(d.gu==="완주군"&&((q.gu==="덕진구"&&d.rg==="북부")||(q.gu==="완산구"&&d.rg==="서부")))?50:0;
     // 단지 자체 점수: 세대수·동 대장·주차·거래량·대표 의견
     const hh=a.hh||300, sz=Math.min(100,Math.max(20,(Math.log10(hh)-2)/(Math.log10(2000)-2)*100));
@@ -535,15 +536,15 @@ function run(){
   if(!top.length){
     const alt=[];
     ["59","74","84","105","115"].filter(z=>z!==q.size).forEach(z=>{ const n=match({...q,size:z},B).length; if(n) alt.push(`${SIZE_LABEL[z]}로 바꾸면 <b>${n}곳</b>`); });
-    if(q.newpref==="high"){ const n=match({...q,newpref:"any"},B).length; if(n) alt.unshift(`"연식 상관없음"으로 바꾸면 <b>${n}곳</b>`); }
+    if(q.newpref!=="any"){ const n=match({...q,newpref:"any"},B).length; if(n) alt.unshift(`연식 "상관없음"으로 바꾸면 <b>${n}곳</b>`); }
     $("dongs").innerHTML=`<p>지금 조건(${SIZE_LABEL[q.size]}, 약 ${won(Math.floor(B.price/100)*100)} 이하)에 맞는 단지가 없습니다.</p>`+(alt.length?`<p>이렇게 바꾸면 추천이 나옵니다:</p><ul class="why">${alt.map(x=>`<li>${x}</li>`).join("")}</ul>`:`<p>보유 현금이나 평형을 조정해 다시 보세요.</p>`);
     $("payBox").hidden=true; return; }
   $("payBox").hidden=false;
   const GR={S:5,A:4,B:3,C:2,D:1}; const top3=m.slice(0,3); const ag=r=>aptGrade(r.a)||grade(r.d); const free=top3.reduce((lo,r)=>GR[ag(r)]<=GR[ag(lo)]?r:lo,top3[0]); const freeRank=top3.indexOf(free)+1;
   let guNote=""; if(q.gu!=="any" && !m.some(r=>r.d.gu===q.gu)){
-    const cond=[q.newpref==="high"?"신축 10년 이내":"",SIZE_LABEL[q.size].split("(")[0].trim(),`${won(Math.floor(B.price/1000)*1000)} 이하`].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(", ");
+    const cond=[q.newpref==="high"?"신축 10년 이내":q.newpref==="mid"?"준신축 15년 이내":"",SIZE_LABEL[q.size].split("(")[0].trim(),`${won(Math.floor(B.price/1000)*1000)} 이하`].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(", ");
     const inGu=qq=>{const BB=budget(qq);return match(qq,BB).filter(r=>r.d.gu===q.gu).length;};
-    const alts=[]; if(q.newpref==="high") alts.push(["연식 상관없음으로 바꾸면",{...q,newpref:"any"}]);
+    const alts=[]; if(q.newpref!=="any") alts.push(["연식 상관없음으로 바꾸면",{...q,newpref:"any"}]);
     ["74","59"].filter(z=>+z<+q.size).forEach(z=>alts.push([`${SIZE_LABEL[z].split("(")[0].trim()}로 줄이면`,{...q,size:z}]));
     let alt=""; for(const [t,qq] of alts){const n=inGu(qq); if(n){alt=` ${t} ${q.gu} 단지 <b>${n}곳</b>이 나옵니다.`;break;}}
     guNote=`<div class="gunote">${q.gu}에는 지금 조건(${cond})에 맞는 단지가 없습니다.${alt} 아래는 다른 지역의 대안입니다.</div>`; }
@@ -656,7 +657,7 @@ function report(){
 function riskCheck(){ const q=read(),B=budget(q),m=match(q,B),t=m.slice(0,3);
   if(!t.length||!t.every(r=>monthlyOf(r,q,B).pct>0.25)) return null;
   const safeN=qq=>{const BB=budget(qq);return match(qq,BB).filter(r=>monthlyOf(r,qq,BB).pct<=0.25).length;};
-  const alts=[]; if(q.newpref==="high") alts.push(['"연식 상관없음"으로 바꾸면',{...q,newpref:"any"}]);
+  const alts=[]; if(q.newpref!=="any") alts.push(['연식 "상관없음"으로 바꾸면',{...q,newpref:"any"}]);
   if(q.gu!=="any") alts.push(['선호 지역을 "상관없음"으로 바꾸면',{...q,gu:"any"}]);
   ["74","59"].filter(z=>z!==q.size&&+z<+q.size).forEach(z=>alts.push([`${SIZE_LABEL[z].split("(")[0]}로 줄이면`,{...q,size:z}]));
   let alt=""; for(const [t2,qq] of alts){ const n=safeN(qq); if(n){ alt=`${t2} 추천 집값 안의 안정권 단지 <b>${n}곳</b>이 나옵니다.`; break; } }
