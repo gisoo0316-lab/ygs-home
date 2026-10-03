@@ -151,10 +151,16 @@ nav .cta:hover{color:var(--gold-l)}
 .small{margin-top:16px;font-size:14px;color:#5A6170}
 /* consumer */
 .cs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px}
-.cs a{display:block;background:#fff;border:2px solid var(--navy);border-radius:6px;padding:32px}
-.cs a:hover{border-color:var(--gold)}
+.cs>a{display:block;background:#fff;border:2px solid var(--navy);border-radius:6px;padding:32px}
+.cs>a:hover,.cs .card:hover{border-color:var(--gold)}
 .cs h3{margin:0;font-size:24px;color:var(--navy)}
 .cs p{margin:12px 0 0;font-size:16px;color:var(--sub)}
+.cs .card{background:#fff;border:2px solid var(--navy);border-radius:6px;padding:32px}
+.cs .card h3 small{font-size:14px;font-weight:700;color:var(--gold-t);margin-left:6px}
+.cs .card ul{list-style:none;margin:14px 0 0;padding:0}
+.cs .card li{border-top:1px solid var(--line)}
+.cs .card li a{display:block;padding:10px 0;font-size:16px;font-weight:500;color:var(--ink)}
+.cs .card li a:hover{color:var(--gold-t)}
 .cs .go{display:inline-block;margin-top:20px;font-weight:700;color:var(--gold-t)}
 /* faq */
 .faq{margin-top:40px;display:flex;flex-direction:column;gap:12px}
@@ -332,7 +338,7 @@ footer img{height:36px;width:auto}
 <p class="lead">분양 현장에서 쌓은 판단을 소비자에게도 공개합니다.</p>
 <div class="cs">
 <a href="find.html"><h3>내집찾기 전주·완주</h3><p>보유 현금과 연소득을 넣으면 살 수 있는 집값을 계산하고, 실거래가와 전문가 동네 평가로 맞는 아파트 3곳을 추천합니다. 단지별 상세 분석은 리포트로 받아볼 수 있습니다.</p><span class="go">내집찾기 시작하기</span></a>
-<a href="news.html"><h3>YGS 부동산 브리핑</h3><p>분양 일정, 대출 규제, 전북 부동산 소식을 매주 짧게 정리합니다.</p><span class="go">브리핑 보기</span></a>
+<div class="card news"><h3>YGS 부동산 브리핑 <small id="nwDate">최신 10월 3일</small></h3><p>분양 일정, 대출 규제, 전북 부동산 소식을 짧게 정리합니다.</p><ul id="nwList"><li><a href="news.html#b2026-10-03-1">표류하던 천마지구, 우미건설이 마무리한다</a></li><li><a href="news.html#b2026-10-03-2">전주시의회 협약 변경 가결, 사업시행자 &#x27;천마개발&#x27; 확정</a></li><li><a href="news.html#b2026-10-03-3">하가구역 재개발 &#x27;힐스테이트 아너원&#x27;, 관리처분인가 받고 이주·철거 단계로</a></li></ul><a class="go" href="news.html">브리핑 전체 보기</a></div>
 </div>
 </div>
 </section>
@@ -373,5 +379,15 @@ footer img{height:36px;width:auto}
 </div>
 </footer>
 
+<script>
+(function(){try{fetch('news.html',{cache:'no-cache'}).then(function(r){return r.text()}).then(function(t){
+var m=t.match(/<script type="application\/json" id="briefs-data">([\s\S]*?)<\/script>/);if(!m)return;
+var B=JSON.parse(m[1]);B.sort(function(a,b){return a.date<b.date?1:-1});var it=[];
+B.forEach(function(b){b.items.forEach(function(i,n){it.push({d:b.date,n:n+1,t:i.title})})});it=it.slice(0,3);if(!it.length)return;
+var ul=document.getElementById('nwList');ul.innerHTML='';
+it.forEach(function(x){var li=document.createElement('li'),a=document.createElement('a');a.href='news.html#b'+x.d+'-'+x.n;a.textContent=x.t;li.appendChild(a);ul.appendChild(li)});
+var p=it[0].d.split('-');document.getElementById('nwDate').textContent='최신 '+(+p[1])+'월 '+(+p[2])+'일';
+}).catch(function(){})}catch(e){}})();
+</script>
 </body>
 </html>
