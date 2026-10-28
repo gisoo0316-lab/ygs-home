@@ -345,8 +345,8 @@ section.panel[aria-labelledby="h-in"] h2{font-size:28px;font-weight:800;border-b
       <li>추천 이유와 조심할 점</li>
       <li>단지마다 전문가 의견</li>
     </ul>
-    <button class="btn" id="payBtn" type="button">내 조건 맞춤 리포트 보기 · 5,500원</button>
-    <div class="hint" style="margin:0;text-align:center">5,500원 · 결제 후 바로 열람</div>
+    <button class="btn" id="payBtn" type="button">내 조건 맞춤 리포트 보기 · 1,900원</button>
+    <div class="hint" style="margin:0;text-align:center">1,900원 · 결제 후 바로 열람</div>
     <p class="hint refund" style="margin:0;font-size:14px">결제 전 확인해 주세요. 리포트는 결제 즉시 열람되는 디지털 콘텐츠이며, 무료 미리보기로 내용을 충분히 확인하실 수 있습니다. 열람이 시작된 뒤에는 직접 입력하신 조건에 따른 결과를 이유로 한 환불은 어렵습니다. 결제 중복이나 서비스 오류는 환불해 드립니다.</p>
   </section>
   </div>
@@ -404,11 +404,11 @@ section.panel[aria-labelledby="h-in"] h2{font-size:28px;font-weight:800;border-b
   <button class="btn" id="rkRedo" type="button">조건 다시 고르기</button>
   <button class="ghost" id="rkGo" type="button">그래도 결과 보기</button>
 </div></div>
-<div class="stickybar" id="stickyBar" hidden><div class="inner"><button class="btn" id="stickyBtn" type="button">리포트 보기 · 5,500원</button><button class="sb-x" id="stickyX" type="button" aria-label="하단 버튼 닫기">닫기</button></div></div>
+<div class="stickybar" id="stickyBar" hidden><div class="inner"><button class="btn" id="stickyBtn" type="button">리포트 보기 · 1,900원</button><button class="sb-x" id="stickyX" type="button" aria-label="하단 버튼 닫기">닫기</button></div></div>
 <div class="sheet" id="sheet" hidden role="dialog" aria-labelledby="sh-t">
   <div class="inner">
     <div id="sh-t" style="font-weight:700">YGS 맞춤 아파트 리포트</div>
-    <div class="price num" id="shPrice">5,500원</div>
+    <div class="price num" id="shPrice">1,900원</div>
     <div class="hint">시험 운영 중입니다. 지인 테스트용 시험 코드를 입력하면 리포트가 열립니다. 정식 오픈 후에는 이 자리에서 카카오페이·토스·카드로 결제합니다.</div>
     <input id="testCode" type="text" autocomplete="off" placeholder="시험 코드" aria-label="시험 코드" style="width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)">
     <div class="hint" id="payMsg" role="alert" hidden></div>
@@ -438,7 +438,7 @@ async function api(p,body){
   if(!res.ok){ const err=new Error((j&&j.msg)||"서버 오류"); err.status=res.status; err.data=j; throw err; }
   return j;
 }
-let PAYTXT="리포트 보기 · 5,500원";
+let PAYTXT="리포트 보기 · 1,900원";
 async function run(){
   const q=read(), my=++seq; let r;
   try{ r=await api("/api/run",{q}); }
@@ -473,7 +473,7 @@ let _rt=null;
 const _auto=()=>{clearTimeout(_rt);_rt=setTimeout(()=>{try{run();}catch(e){}},400);};
 $("f").addEventListener("input",_auto);
 $("f").addEventListener("change",_auto);
-$("payBtn").onclick=()=>{$("sh-t").textContent="YGS 맞춤 아파트 리포트";$("shPrice").textContent='5,500원';$("agreeRefund").checked=false;$("paid").disabled=true;$("paid").hidden=false;$("testCode").value="";$("payMsg").hidden=true;$("sheet").hidden=false;$("agreeRefund").focus();};
+$("payBtn").onclick=()=>{$("sh-t").textContent="YGS 맞춤 아파트 리포트";$("shPrice").textContent='1,900원';$("agreeRefund").checked=false;$("paid").disabled=true;$("paid").hidden=false;$("testCode").value="";$("payMsg").hidden=true;$("sheet").hidden=false;$("agreeRefund").focus();};
 $("agreeRefund").onchange=()=>{$("paid").disabled=!$("agreeRefund").checked;};
 $("cancel").onclick=()=>{$("sheet").hidden=true;};
 (function(){
