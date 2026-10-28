@@ -453,7 +453,8 @@ async function run(){
   lastQ=q;
   $("budget").innerHTML=r.budget; $("teaser").innerHTML=r.teaser; $("dongs").innerHTML=r.dongs;
   $("payBox").hidden=r.payBoxHidden;
-  if(r.payText){ PAYTXT=r.payText; $("payBtn").textContent=PAYTXT; $("stickyBtn").textContent=PAYTXT; }
+  if(r.payText){ PAYTXT=r.payText.replace(/[0-9,]+원/,"1,900원"); // 서버 문구의 가격은 이 페이지 가격으로 맞춤
+    $("payBtn").textContent=PAYTXT; $("stickyBtn").textContent=PAYTXT; }
   if(r.hideReport) $("report").hidden=true;
   return r;
 }
