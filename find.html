@@ -255,6 +255,25 @@ section.panel[aria-labelledby="h-in"] h2{font-size:28px;font-weight:800;border-b
   .proto,header.hero,.newslink,section.panel[aria-labelledby="h-why"],section.panel[aria-labelledby="h-sample"],section.panel[aria-labelledby="h-in"],#free,#payBox,.sheet,.stickybar,.riskmodal,.savepanel,#consultBox,#again{display:none!important}
   .card,.panel{break-inside:avoid}
 }
+/* 모바일 여백·글씨 정리 (화면이 꽉 차 보이지 않게) */
+@media (max-width:440px){
+  body{font-size:15px;line-height:1.6;padding-inline:22px}
+  .wrap{gap:16px}
+  .hero p{font-size:15px}
+  .hero h1{font-size:22px}
+  .panel{padding:18px 16px}
+  section.panel[aria-labelledby="h-in"]{padding:18px 16px}
+  section.panel[aria-labelledby="h-in"] h2{font-size:21px}
+  .panel h2,.pay h2{font-size:17px}
+  .trust b{font-size:15px}.trust span{font-size:13px}
+  .trust div{padding:10px 14px}
+  input[type=number],select{font-size:16px;padding:9px 12px}
+  .proto{font-size:12.5px}
+  label{font-size:14px}
+  .seg label{font-size:14px;padding:6px 12px}
+  .field{gap:4px}
+  details.more>summary{font-size:15px;padding:10px 14px}
+}
 </style>
 
 <div class="wrap">
